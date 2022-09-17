@@ -16,8 +16,9 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 # %%
-train = pd.read_csv('/Users/asmabaccouche/Heart disease project/Data/Modelling data/Train/train3.csv')
-test = pd.read_csv('/Users/asmabaccouche/Heart disease project/Data/Modelling data/Test/test3.csv')
+global_path = '/Users/asmabaccouche/Heart disease/Heart-disease'
+train = pd.read_csv(global_path+'/Data/Modelling data/Train/train3.csv')
+test = pd.read_csv(global_path+'/Data/Modelling data/Test/test3.csv')
 
 features = train.columns.tolist()
 features.remove('cardio')
@@ -85,5 +86,5 @@ df_results['recall']=rs
 df_results['f1-score']=f1s
 
 df_results.sort_values('accuracy').reset_index(drop=True,inplace=True)
-df_results.to_csv('/Users/asmabaccouche/Heart disease project/Documents/Model reports/results_3.csv', index=False)
+df_results.to_csv(global_path+'/Documents/Model reports/results_3.csv', index=False)
 # %%

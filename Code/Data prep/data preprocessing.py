@@ -8,7 +8,8 @@ from scipy import stats
 import numpy as np
 from sklearn.model_selection import train_test_split
 #%%
-data_path = '/Users/asmabaccouche/Heart disease project/Data/Raw data/heart_disease.csv'
+global_path = '/Users/asmabaccouche/Heart disease/Heart-disease'
+data_path = global_path+'/Data/Raw data/heart_disease.csv'
 # Read data
 df = pd.read_csv(data_path, index_col=0)
 df['age_years'] = df['age']//365
@@ -17,8 +18,8 @@ df = df.drop(['age'], axis=1)
 df.isnull().any()
 #%%
 train, test= train_test_split(df, test_size=0.2, random_state=42)
-train.to_csv('/Users/asmabaccouche/Heart disease project/Data/Modelling data/Train/train0.csv', index=False)
-test.to_csv('/Users/asmabaccouche/Heart disease project/Data/Modelling data/Test/test0.csv', index=False)
+train.to_csv(global_path+'/Data/Modelling data/Train/train0.csv', index=False)
+test.to_csv(global_path+'/Data/Modelling data/Test/test0.csv', index=False)
 #%%
 # check for NaN values
 missing_values = ["n/a", "na", "--"]
@@ -138,7 +139,7 @@ for i in range(1, len(df.columns)-1):
 outliers = (df['height']>=250)|(df['weight']>=200)|(df['weight']<=25)|(df['ap_hi']>=10000)|(df['ap_lo']>=5000)|(df['age_years']<=30)
 # removing outliers
 df_out1 = df.drop(df.index[[outliers]])
-df_out1.to_csv('/Users/asmabaccouche/Heart disease project/Data/Preprocessed data/data_clean1.csv', index=False)
+df_out1.to_csv(global_path+'/Data/Preprocessed data/data_clean1.csv', index=False)
 #%%
 # check for outliers
 # 2) IQR Score (interquartile range)
@@ -151,7 +152,7 @@ print(((df < (Q1 - 1.5 * IQR)) | (df > (Q3 + 1.5 * IQR))).any())
 
 # removing outliers
 df_out2 = df[~((df < (Q1 - 1.5 * IQR)) |(df > (Q3 + 1.5 * IQR))).any(axis=1)] 
-df_out2.to_csv('/Users/asmabaccouche/Heart disease project/Data/Preprocessed data/data_clean2.csv', index=False)
+df_out2.to_csv(global_path+'/Data/Preprocessed data/data_clean2.csv', index=False)
 #%%
 # check for outliers
 # 3) z Score + threshold
@@ -162,5 +163,5 @@ threshold = 3
 a = np.where(z > threshold)
 # removing outliers
 df_out3= df[(z < threshold).all(axis=1)]
-df_out3.to_csv('/Users/asmabaccouche/Heart disease project/Data/Preprocessed data/data_clean3.csv', index=False)
+df_out3.to_csv(global_path+'/Data/Preprocessed data/data_clean3.csv', index=False)
 # %%
