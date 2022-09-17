@@ -106,5 +106,5 @@ for nb in range(3):
     df_results['f1-score']=f1s
 
     df_results.sort_values('accuracy').reset_index(drop=True,inplace=True)
-    df_results.to_csv(global_path+'/Documents/Model reports/results'+str(nb+1)+'.csv', index=False)
+    df_results.to_csv(global_path+'/Documents/Model reports/results'+str(nb+1)+'_GridSearch.csv', index=False)
 # %%
