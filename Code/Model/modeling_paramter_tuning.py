@@ -16,6 +16,7 @@ from sklearn.metrics import confusion_matrix,accuracy_score
 from sklearn.metrics import precision_score, recall_score, f1_score
 import seaborn as sns
 import matplotlib.pyplot as plt
+import numpy as np
 
 # %%
 global_path = '/Users/asmabaccouche/Heart disease/Heart-disease'
@@ -44,8 +45,8 @@ for nb in range(3):
     X_train = pd.get_dummies(X_train, columns = cols)
     X_test = pd.get_dummies(X_test, columns = cols)
     # %%
-    def classify(classifier):
-        grid = GridSearchCV(classifier, param_grid=params[i], CV=10, verbose=1, n_jobs=1)
+    def classify(classifier, param):
+        grid = GridSearchCV(classifier, param_grid=param, scoring = 'accuracy', cv=10, verbose=1, n_jobs=1)
         grid.fit(X_train, y_train)
         best_classifier = grid.best_estimator_
         y_pred  =  best_classifier.predict(X_test)
@@ -58,51 +59,29 @@ for nb in range(3):
         #plt.show()
         return ac, p, r, f1
     # %%
-    classifier1 = GaussianNB(var_smoothing= 1e-7)
-    classifier2 = KNN(n_neighbors = 10)
-    classifier3 = xgb.XGBClassifier(
-                    silent=False, 
-                    scale_pos_weight=1,
-                    learning_rate=0.01,  
-                    colsample_bytree = 0.4,
-                    subsample = 0.8,
-                    objective='binary:logistic', 
-                    n_estimators=1000, 
-                    reg_alpha = 0.3,
-                    max_depth=4, 
-                    gamma=10)
-    classifier4 = GradientBoostingClassifier(
-                    learning_rate=0.1,
-                    n_estimators=100,
-                    max_depth=3,
-                    min_samples_split=2,
-                    min_samples_leaf=1,
-                    subsample=1,
-                    max_features='sqrt',
-                    random_state=10)
-    classifier5 = svm.SVC(
-                    kernel="linear", #'rbf' 'sigmoid'
-                    gamma="auto",
-                    C=0.1)
-    classifier6 = RandomForestClassifier(
-                    bootstrap= True,
-                    max_depth= 70,
-                    max_features= 'auto',
-                    min_samples_leaf= 4,
-                    min_samples_split= 10,
-                    n_estimators= 400,
-                    random_state=0)
-    classifier7 = LogisticRegression(
-                    random_state=0,
-                    penalty='l1',
-                    solver='liblinear')
-    classifier8 = DecisionTreeClassifier(
-                    random_state=0,
-                    max_depth=2)
+    classifier1 = GaussianNB()
+    classifier2 = KNN()
+    classifier3 = xgb.XGBClassifier()
+    classifier4 = GradientBoostingClassifier()
+    classifier5 = svm.SVC()
+    classifier6 = RandomForestClassifier()
+    classifier7 = LogisticRegression(random_state=0)
+    classifier8 = DecisionTreeClassifier(random_state=0)
     # %%
     classifiers = [classifier1, classifier2, classifier3, classifier4, classifier5, classifier6, classifier7, classifier8]
     model_names = ['Naive Bayes', 'KNN', 'XGBoost', 'Gradient Boosting', 'SVM', 'Random Forest', 'Logistic Regression', 'Decision Tree']
-    params = [{"criterion":['gini', 'entropy'], "max_depth":range(1,10), "min_samples_split":range(1,10),"min_samples_leaf":range(1,5)}]
+    params = [
+    {'var_smoothing': np.logspace(0,-9, num=100)},
+    {'leaf_size': list(range(1,50)), 'n_neighbors':list(range(1,30))},
+    {'learning_rate': [0.01, 0.05, 0.1, 0.2], 'n_estimators': [1000],'random_state':[0], 'max_depth' : [5, 8, 15, None], 
+    'min_samples_split' : [1,2,5,10], 'min_samples_leaf': [1,2,5,10], 'max_features': ['log2', 'sqrt', 'auto', 'None']},
+    {'learning_rate':[0.15,0.1,0.05,0.01,0.005,0.001], 'n_estimators':[100,250,500,750,1000,1250,1500,1750]},
+    {'C': [1,10,100], 'kernel': ['linear']},
+    {'n_estimators': [int(x) for x in np.linspace(start = 200, stop = 2000, num = 10)],
+    'max_features': ['auto', 'sqrt'], 'max_depth': [int(x) for x in np.linspace(10, 110, num = 11)],
+    'min_samples_split': [2, 5, 10], 'min_samples_leaf': [1, 2, 4], 'bootstrap': [True, False]},
+    {'penalty' : ['l1', 'l2'], 'C' : np.logspace(-4, 4, 20), 'solver' : ['liblinear']},
+    {"criterion":['gini', 'entropy'], "max_depth":range(1,10), "min_samples_split":range(1,10),"min_samples_leaf":range(1,5)}]
     col=[]
     acs=[]
     ps=[]
@@ -111,7 +90,8 @@ for nb in range(3):
     for i in range(len(classifiers)):
         classifier = classifiers[i]
         model_name = model_names[i]
-        ac, p, r, f1 = classify(classifier)
+        param = params[i]
+        ac, p, r, f1 = classify(classifier, param)
         col.append(model_name)
         acs.append(ac)
         ps.append(p)
