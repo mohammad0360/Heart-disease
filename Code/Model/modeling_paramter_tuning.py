@@ -1,6 +1,8 @@
 
 # %%
+from termios import VERASE
 import pandas as pd
+from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier as KNN
@@ -19,8 +21,8 @@ import matplotlib.pyplot as plt
 global_path = '/Users/asmabaccouche/Heart disease/Heart-disease'
 
 for nb in range(3):
-    train = pd.read_csv(global_path+'/Data/Modelling data/Train/train'+str(nb+1)+'_wo.csv')
-    test = pd.read_csv(global_path+'/Data/Modelling data/Test/test'+str(nb+1)+'_wo.csv')
+    train = pd.read_csv(global_path+'/Data/Modelling data/Train/train'+str(nb+1)+'.csv')
+    test = pd.read_csv(global_path+'/Data/Modelling data/Test/test'+str(nb+1)+'.csv')
 
     features = train.columns.tolist()
     features.remove('cardio')
@@ -43,8 +45,10 @@ for nb in range(3):
     X_test = pd.get_dummies(X_test, columns = cols)
     # %%
     def classify(classifier):
-        classifier.fit(X_train, y_train)
-        y_pred  =  classifier.predict(X_test)
+        grid = GridSearchCV(classifier, param_grid=params[i], CV=10, verbose=1, n_jobs=1)
+        grid.fit(X_train, y_train)
+        best_classifier = grid.best_estimator_
+        y_pred  =  best_classifier.predict(X_test)
         ac = accuracy_score(y_test, y_pred)
         p = precision_score(y_test, y_pred)
         r = recall_score(y_test, y_pred)
@@ -54,17 +58,51 @@ for nb in range(3):
         #plt.show()
         return ac, p, r, f1
     # %%
-    classifier1 = GaussianNB()
-    classifier2 = KNN(n_neighbors = 30)
-    classifier3 = xgb.XGBClassifier(objective="binary:logistic")
-    classifier4 = GradientBoostingClassifier(n_estimators=500, learning_rate=0.7, max_features=4, max_depth=4, random_state=0)
-    classifier5 = svm.SVC(kernel="linear", C=0.01)
-    classifier6 = RandomForestClassifier(max_depth=2, random_state=0)
-    classifier7 = LogisticRegression(random_state=0)
-    classifier8 = DecisionTreeClassifier(random_state=0, max_depth=2)
+    classifier1 = GaussianNB(var_smoothing= 1e-7)
+    classifier2 = KNN(n_neighbors = 10)
+    classifier3 = xgb.XGBClassifier(
+                    silent=False, 
+                    scale_pos_weight=1,
+                    learning_rate=0.01,  
+                    colsample_bytree = 0.4,
+                    subsample = 0.8,
+                    objective='binary:logistic', 
+                    n_estimators=1000, 
+                    reg_alpha = 0.3,
+                    max_depth=4, 
+                    gamma=10)
+    classifier4 = GradientBoostingClassifier(
+                    learning_rate=0.1,
+                    n_estimators=100,
+                    max_depth=3,
+                    min_samples_split=2,
+                    min_samples_leaf=1,
+                    subsample=1,
+                    max_features='sqrt',
+                    random_state=10)
+    classifier5 = svm.SVC(
+                    kernel="linear", #'rbf' 'sigmoid'
+                    gamma="auto",
+                    C=0.1)
+    classifier6 = RandomForestClassifier(
+                    bootstrap= True,
+                    max_depth= 70,
+                    max_features= 'auto',
+                    min_samples_leaf= 4,
+                    min_samples_split= 10,
+                    n_estimators= 400,
+                    random_state=0)
+    classifier7 = LogisticRegression(
+                    random_state=0,
+                    penalty='l1',
+                    solver='liblinear')
+    classifier8 = DecisionTreeClassifier(
+                    random_state=0,
+                    max_depth=2)
     # %%
     classifiers = [classifier1, classifier2, classifier3, classifier4, classifier5, classifier6, classifier7, classifier8]
     model_names = ['Naive Bayes', 'KNN', 'XGBoost', 'Gradient Boosting', 'SVM', 'Random Forest', 'Logistic Regression', 'Decision Tree']
+    params = [{"criterion":['gini', 'entropy'], "max_depth":range(1,10), "min_samples_split":range(1,10),"min_samples_leaf":range(1,5)}]
     col=[]
     acs=[]
     ps=[]
@@ -88,5 +126,5 @@ for nb in range(3):
     df_results['f1-score']=f1s
 
     df_results.sort_values('accuracy').reset_index(drop=True,inplace=True)
-    df_results.to_csv(global_path+'/Documents/Model reports/results'+str(nb+1)+'_wo.csv', index=False)
+    df_results.to_csv(global_path+'/Documents/Model reports/results'+str(nb+1)+'.csv', index=False)
 # %%
