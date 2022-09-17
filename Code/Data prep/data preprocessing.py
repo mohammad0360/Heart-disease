@@ -17,8 +17,8 @@ df = df.drop(['age'], axis=1)
 df.isnull().any()
 #%%
 train, test= train_test_split(df, test_size=0.2, random_state=42)
-train.to_csv('/Users/asmabaccouche/Heart disease project/Data/Modelling data/Train/train0.csv', index=False)
-test.to_csv('/Users/asmabaccouche/Heart disease project/Data/Modelling data/Test/test0.csv', index=False)
+train.to_csv('/Users/asmabaccouche/Heart disease project/Data/Modelling data/Train/train1.csv', index=False)
+test.to_csv('/Users/asmabaccouche/Heart disease project/Data/Modelling data/Test/test1.csv', index=False)
 #%%
 # check for NaN values
 missing_values = ["n/a", "na", "--"]
